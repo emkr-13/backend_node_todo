@@ -1,7 +1,7 @@
 import { db } from "../config/db";
 import { users } from "../models/user";
 import { eq } from "drizzle-orm";
-import { UserDto, UserUpdateDto } from "../dto/userDto";
+import { UserDto, UserUpdateDto, RegisterRequestDto } from "../dto/userDto";
 
 export class UserRepository {
   async findById(userId: string): Promise<any> {
@@ -12,6 +12,14 @@ export class UserRepository {
   async findByEmail(email: string): Promise<any> {
     const [user] = await db.select().from(users).where(eq(users.email, email));
     return user;
+  }
+
+  async create(userData: {
+    email: string;
+    password: string;
+    fullname: string | null;
+  }): Promise<any> {
+    return await db.insert(users).values(userData);
   }
 
   async update(userId: string, userData: Partial<UserUpdateDto>): Promise<any> {

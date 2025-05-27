@@ -1,5 +1,9 @@
 import { UserRepository } from "../repositories/userRepository";
-import { LoginRequestDto, LoginResponseDto } from "../dto/userDto";
+import {
+  LoginRequestDto,
+  LoginResponseDto,
+  RegisterRequestDto,
+} from "../dto/userDto";
 import bcrypt from "bcryptjs";
 import { generateJwtToken, generateRefreshToken } from "../utils/helper";
 
@@ -8,6 +12,34 @@ export class AuthService {
 
   constructor() {
     this.userRepository = new UserRepository();
+  }
+
+  async register(registerData: RegisterRequestDto): Promise<boolean> {
+    try {
+      const { email, password, fullname } = registerData;
+
+      // Check if user already exists
+      const existingUser = await this.userRepository.findByEmail(email);
+      if (existingUser) {
+        return false;
+      }
+
+      // Hash password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      // Create user
+      await this.userRepository.create({
+        email,
+        password: hashedPassword,
+        fullname: fullname || null,
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Error in AuthService.register:", error);
+      throw error;
+    }
   }
 
   async login(loginData: LoginRequestDto): Promise<LoginResponseDto | null> {

@@ -24,3 +24,9 @@ export interface LoginResponseDto {
   token: string;
   refreshToken: string;
 }
+
+export interface RegisterRequestDto {
+  email: string;
+  password: string;
+  fullname?: string;
+}

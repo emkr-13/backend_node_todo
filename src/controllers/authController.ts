@@ -1,9 +1,47 @@
 import { Request, Response } from "express";
 import { sendResponse } from "../utils/responseHelper";
 import { AuthService } from "../services/authService";
-import { LoginRequestDto } from "../dto/userDto";
+import { LoginRequestDto, RegisterRequestDto } from "../dto/userDto";
 
 const authService = new AuthService();
+
+export const register = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { email, password, fullname } = req.body;
+
+    // Validate input
+    if (!email || !password) {
+      sendResponse(res, 400, "Email and password are required");
+      return;
+    }
+
+    // Check email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      sendResponse(res, 400, "Invalid email format");
+      return;
+    }
+
+    // Check password length
+    if (password.length < 6) {
+      sendResponse(res, 400, "Password must be at least 6 characters");
+      return;
+    }
+
+    const registerData: RegisterRequestDto = { email, password, fullname };
+    const success = await authService.register(registerData);
+
+    if (!success) {
+      sendResponse(res, 409, "Email already in use");
+      return;
+    }
+
+    sendResponse(res, 201, "User registered successfully");
+  } catch (error) {
+    console.error("Error during registration:", error);
+    sendResponse(res, 500, "Registration failed", error);
+  }
+};
 
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
