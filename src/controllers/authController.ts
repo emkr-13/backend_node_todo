@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { sendResponse } from "../utils/responseHelper";
 import { AuthService } from "../services/authService";
 import { LoginRequestDto, RegisterRequestDto } from "../dto/userDto";
+import logger from "../utils/logger";
 
 const authService = new AuthService();
 
@@ -32,13 +33,15 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const success = await authService.register(registerData);
 
     if (!success) {
+      logger.info({ email }, "Registration failed - Email already in use");
       sendResponse(res, 409, "Email already in use");
       return;
     }
 
+    logger.info({ email }, "User registered successfully");
     sendResponse(res, 201, "User registered successfully");
   } catch (error) {
-    console.error("Error during registration:", error);
+    logger.error({ error }, "Error during registration");
     sendResponse(res, 500, "Registration failed", error);
   }
 };
@@ -58,16 +61,21 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     // If login failed
     if (!result) {
+      logger.info({ email }, "Login failed - Invalid credentials");
       sendResponse(res, 401, "Invalid credentials");
       return;
     }
 
+    logger.info({ email }, "Login successful");
     sendResponse(res, 200, "Login successful", {
       token: result.token,
       refreshToken: result.refreshToken,
     });
   } catch (error) {
-    console.error("Unexpected error during login:", error);
+    logger.error(
+      { error, email: req.body.email },
+      "Unexpected error during login"
+    );
     sendResponse(res, 500, "An unexpected error occurred", error);
   }
 };
@@ -85,13 +93,18 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
     const success = await authService.logout(userId);
 
     if (!success) {
+      logger.error({ userId }, "Logout failed");
       sendResponse(res, 500, "Logout failed");
       return;
     }
 
+    logger.info({ userId }, "Logout successful");
     sendResponse(res, 200, "Logout successful");
   } catch (error) {
-    console.error("Error during logout:", error);
+    logger.error(
+      { error, userId: (req as any)?.user?.id },
+      "Error during logout"
+    );
     sendResponse(res, 500, "Logout failed", error);
   }
 };

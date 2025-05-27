@@ -1,5 +1,6 @@
 import { UserRepository } from "../repositories/userRepository";
 import { UserProfileDto, UserUpdateDto } from "../dto/userDto";
+import logger from "../utils/logger";
 
 export class UserService {
   private userRepository: UserRepository;
@@ -21,7 +22,7 @@ export class UserService {
         usercreated: user.createdAt,
       };
     } catch (error) {
-      console.error("Error in UserService.getProfile:", error);
+      logger.error({ error, userId }, "Error in UserService.getProfile");
       throw error;
     }
   }
@@ -36,7 +37,10 @@ export class UserService {
       await this.userRepository.update(userId, userData);
       return true;
     } catch (error) {
-      console.error("Error in UserService.updateUser:", error);
+      logger.error(
+        { error, userId, userData },
+        "Error in UserService.updateUser"
+      );
       throw error;
     }
   }

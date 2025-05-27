@@ -1,5 +1,6 @@
 import { TaskRepository } from "../repositories/taskRepository";
 import { CreateTaskDto, TaskDto, UpdateTaskDto } from "../dto/taskDto";
+import logger from "../utils/logger";
 
 export class TaskService {
   private taskRepository: TaskRepository;
@@ -12,7 +13,7 @@ export class TaskService {
     try {
       return await this.taskRepository.findAll(userId);
     } catch (error) {
-      console.error("Error in TaskService.getAllTasks:", error);
+      logger.error({ error, userId }, "Error in TaskService.getAllTasks");
       throw error;
     }
   }
@@ -22,7 +23,10 @@ export class TaskService {
       const task = await this.taskRepository.findById(taskId, userId);
       return task || null;
     } catch (error) {
-      console.error("Error in TaskService.getTaskById:", error);
+      logger.error(
+        { error, taskId, userId },
+        "Error in TaskService.getTaskById"
+      );
       throw error;
     }
   }
@@ -31,7 +35,10 @@ export class TaskService {
     try {
       return await this.taskRepository.create(taskData, userId);
     } catch (error) {
-      console.error("Error in TaskService.createTask:", error);
+      logger.error(
+        { error, userId, taskData },
+        "Error in TaskService.createTask"
+      );
       throw error;
     }
   }
@@ -49,7 +56,10 @@ export class TaskService {
 
       return await this.taskRepository.update(taskId, userId, taskData);
     } catch (error) {
-      console.error("Error in TaskService.updateTask:", error);
+      logger.error(
+        { error, taskId, userId, taskData },
+        "Error in TaskService.updateTask"
+      );
       throw error;
     }
   }
@@ -63,7 +73,10 @@ export class TaskService {
 
       return await this.taskRepository.delete(taskId, userId);
     } catch (error) {
-      console.error("Error in TaskService.deleteTask:", error);
+      logger.error(
+        { error, taskId, userId },
+        "Error in TaskService.deleteTask"
+      );
       throw error;
     }
   }
@@ -82,7 +95,10 @@ export class TaskService {
         is_completed: !task.is_completed,
       });
     } catch (error) {
-      console.error("Error in TaskService.toggleTaskCompletion:", error);
+      logger.error(
+        { error, taskId, userId },
+        "Error in TaskService.toggleTaskCompletion"
+      );
       throw error;
     }
   }

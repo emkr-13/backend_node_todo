@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { sendResponse } from "../utils/responseHelper";
 import { TaskService } from "../services/taskService";
 import { CreateTaskDto, UpdateTaskDto } from "../dto/taskDto";
+import logger from "../utils/logger";
 
 const taskService = new TaskService();
 
@@ -18,9 +19,10 @@ export const getAllTasks = async (
     }
 
     const tasks = await taskService.getAllTasks(userId);
+    logger.info({ userId }, "Tasks retrieved successfully");
     sendResponse(res, 200, "Tasks retrieved successfully", tasks);
   } catch (error) {
-    console.error("Error retrieving tasks:", error);
+    logger.error({ error }, "Error retrieving tasks");
     sendResponse(res, 500, "Internal server error");
   }
 };
@@ -46,13 +48,15 @@ export const getTaskById = async (
     const task = await taskService.getTaskById(taskId, userId);
 
     if (!task) {
+      logger.info({ taskId, userId }, "Task not found");
       sendResponse(res, 404, "Task not found");
       return;
     }
 
+    logger.info({ taskId, userId }, "Task retrieved successfully");
     sendResponse(res, 200, "Task retrieved successfully", task);
   } catch (error) {
-    console.error("Error retrieving task:", error);
+    logger.error({ error, taskId: req.params.id }, "Error retrieving task");
     sendResponse(res, 500, "Internal server error");
   }
 };
@@ -81,9 +85,13 @@ export const createTask = async (
     };
 
     const newTask = await taskService.createTask(taskData, userId);
+    logger.info({ userId, taskData }, "Task created successfully");
     sendResponse(res, 201, "Task created successfully", newTask);
   } catch (error) {
-    console.error("Error creating task:", error);
+    logger.error(
+      { error, userId: (req as any)?.user?.id },
+      "Error creating task"
+    );
     sendResponse(res, 500, "Internal server error");
   }
 };
@@ -126,13 +134,15 @@ export const updateTask = async (
     const updatedTask = await taskService.updateTask(taskId, userId, taskData);
 
     if (!updatedTask) {
+      logger.info({ taskId, userId }, "Task not found for update");
       sendResponse(res, 404, "Task not found");
       return;
     }
 
+    logger.info({ taskId, userId, taskData }, "Task updated successfully");
     sendResponse(res, 200, "Task updated successfully", updatedTask);
   } catch (error) {
-    console.error("Error updating task:", error);
+    logger.error({ error, taskId: req.params.id }, "Error updating task");
     sendResponse(res, 500, "Internal server error");
   }
 };
@@ -158,13 +168,15 @@ export const deleteTask = async (
     const success = await taskService.deleteTask(taskId, userId);
 
     if (!success) {
+      logger.info({ taskId, userId }, "Task not found for deletion");
       sendResponse(res, 404, "Task not found");
       return;
     }
 
+    logger.info({ taskId, userId }, "Task deleted successfully");
     sendResponse(res, 200, "Task deleted successfully");
   } catch (error) {
-    console.error("Error deleting task:", error);
+    logger.error({ error, taskId: req.params.id }, "Error deleting task");
     sendResponse(res, 500, "Internal server error");
   }
 };

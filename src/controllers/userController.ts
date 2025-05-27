@@ -2,6 +2,7 @@ import { sendResponse } from "../utils/responseHelper";
 import { Request, Response } from "express";
 import { UserService } from "../services/userService";
 import { UserUpdateDto } from "../dto/userDto";
+import logger from "../utils/logger";
 
 const userService = new UserService();
 
@@ -21,14 +22,19 @@ export const getProfile = async (
 
     // If user not found
     if (!userProfile) {
+      logger.info({ userId }, "User profile not found");
       sendResponse(res, 404, "User not found");
       return;
     }
 
     // Send response with user data
+    logger.info({ userId }, "User profile retrieved successfully");
     sendResponse(res, 200, "User profile retrieved successfully", userProfile);
   } catch (error) {
-    console.error("Error retrieving profile:", error);
+    logger.error(
+      { error, userId: (req as any)?.user?.id },
+      "Error retrieving profile"
+    );
     sendResponse(res, 500, "Internal server error");
   }
 };
@@ -55,14 +61,19 @@ export const editUser = async (req: Request, res: Response): Promise<void> => {
 
     // If user not found
     if (!success) {
+      logger.info({ userId }, "User not found for update");
       sendResponse(res, 404, "User not found");
       return;
     }
 
     // Send success response
+    logger.info({ userId, userData }, "User updated successfully");
     sendResponse(res, 200, "User updated successfully");
   } catch (error) {
-    console.error("Error editing user:", error);
+    logger.error(
+      { error, userId: (req as any)?.user?.id },
+      "Error editing user"
+    );
     sendResponse(res, 500, "Internal server error");
   }
 };

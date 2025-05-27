@@ -6,6 +6,7 @@ import {
 } from "../dto/userDto";
 import bcrypt from "bcryptjs";
 import { generateJwtToken, generateRefreshToken } from "../utils/helper";
+import logger from "../utils/logger";
 
 export class AuthService {
   private userRepository: UserRepository;
@@ -37,7 +38,10 @@ export class AuthService {
 
       return true;
     } catch (error) {
-      console.error("Error in AuthService.register:", error);
+      logger.error(
+        { error, email: registerData.email },
+        "Error in AuthService.register"
+      );
       throw error;
     }
   }
@@ -66,6 +70,7 @@ export class AuthService {
       const refreshToken = refreshTokenResponse.token ?? "";
 
       if (!refreshToken) {
+        logger.error({ userId: user.id }, "Refresh token generation failed");
         throw new Error("Refresh token generation failed");
       }
 
@@ -81,7 +86,10 @@ export class AuthService {
         refreshToken,
       };
     } catch (error) {
-      console.error("Error in AuthService.login:", error);
+      logger.error(
+        { error, email: loginData.email },
+        "Error in AuthService.login"
+      );
       throw error;
     }
   }
@@ -91,7 +99,7 @@ export class AuthService {
       await this.userRepository.updateRefreshToken(userId, null, null);
       return true;
     } catch (error) {
-      console.error("Error in AuthService.logout:", error);
+      logger.error({ error, userId }, "Error in AuthService.logout");
       throw error;
     }
   }
