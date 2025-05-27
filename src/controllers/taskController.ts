@@ -1,10 +1,23 @@
 import { Request, Response } from "express";
 import { sendResponse } from "../utils/responseHelper";
 import { TaskService } from "../services/taskService";
-import { CreateTaskDto, UpdateTaskDto } from "../dto/taskDto";
+import {
+  CreateTaskDto,
+  UpdateTaskDto,
+  createTaskSchema,
+  updateTaskSchema,
+} from "../dto/taskDto";
 import logger from "../utils/logger";
+import { z } from "zod";
 
 const taskService = new TaskService();
+
+// ID parameter validation schema
+const taskIdParamSchema = z.object({
+  id: z.string().refine((val) => !isNaN(parseInt(val)), {
+    message: "Task ID must be a valid number",
+  }),
+});
 
 export const getAllTasks = async (
   req: Request,
@@ -40,11 +53,6 @@ export const getTaskById = async (
       return;
     }
 
-    if (isNaN(taskId)) {
-      sendResponse(res, 400, "Invalid task ID");
-      return;
-    }
-
     const task = await taskService.getTaskById(taskId, userId);
 
     if (!task) {
@@ -67,24 +75,15 @@ export const createTask = async (
 ): Promise<void> => {
   try {
     const userId = (req as any).user.id;
-    const { description, position } = req.body;
 
     if (!userId) {
       sendResponse(res, 400, "Unauthorized");
       return;
     }
 
-    if (!description) {
-      sendResponse(res, 400, "Description is required");
-      return;
-    }
-
-    const taskData: CreateTaskDto = {
-      description,
-      position: position || 0,
-    };
-
+    const taskData: CreateTaskDto = req.body;
     const newTask = await taskService.createTask(taskData, userId);
+
     logger.info({ userId, taskData }, "Task created successfully");
     sendResponse(res, 201, "Task created successfully", newTask);
   } catch (error) {
@@ -103,34 +102,19 @@ export const updateTask = async (
   try {
     const userId = (req as any).user.id;
     const taskId = parseInt(req.params.id);
-    const { description, is_completed, position } = req.body;
 
     if (!userId) {
       sendResponse(res, 400, "Unauthorized");
       return;
     }
 
-    if (isNaN(taskId)) {
-      sendResponse(res, 400, "Invalid task ID");
-      return;
-    }
-
     // At least one field should be provided for update
-    if (
-      description === undefined &&
-      is_completed === undefined &&
-      position === undefined
-    ) {
+    if (Object.keys(req.body).length === 0) {
       sendResponse(res, 400, "No update data provided");
       return;
     }
 
-    const taskData: UpdateTaskDto = {};
-
-    if (description !== undefined) taskData.description = description;
-    if (is_completed !== undefined) taskData.is_completed = is_completed;
-    if (position !== undefined) taskData.position = position;
-
+    const taskData: UpdateTaskDto = req.body;
     const updatedTask = await taskService.updateTask(taskId, userId, taskData);
 
     if (!updatedTask) {
@@ -160,11 +144,6 @@ export const deleteTask = async (
       return;
     }
 
-    if (isNaN(taskId)) {
-      sendResponse(res, 400, "Invalid task ID");
-      return;
-    }
-
     const success = await taskService.deleteTask(taskId, userId);
 
     if (!success) {
@@ -177,6 +156,54 @@ export const deleteTask = async (
     sendResponse(res, 200, "Task deleted successfully");
   } catch (error) {
     logger.error({ error, taskId: req.params.id }, "Error deleting task");
+    sendResponse(res, 500, "Internal server error");
+  }
+};
+
+export const reorderTask = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = (req as any).user.id;
+    const taskId = parseInt(req.params.id);
+    const { newPosition } = req.body;
+
+    if (!userId) {
+      sendResponse(res, 400, "Unauthorized");
+      return;
+    }
+
+    if (isNaN(taskId)) {
+      sendResponse(res, 400, "Invalid task ID");
+      return;
+    }
+
+    if (
+      newPosition === undefined ||
+      typeof newPosition !== "number" ||
+      newPosition < 0
+    ) {
+      sendResponse(res, 400, "Valid newPosition is required");
+      return;
+    }
+
+    const updatedTasks = await taskService.reorderTasks(
+      userId,
+      taskId,
+      newPosition
+    );
+
+    if (!updatedTasks) {
+      logger.info({ taskId, userId }, "Task not found for reordering");
+      sendResponse(res, 404, "Task not found");
+      return;
+    }
+
+    logger.info({ taskId, userId, newPosition }, "Task reordered successfully");
+    sendResponse(res, 200, "Task reordered successfully", updatedTasks);
+  } catch (error) {
+    logger.error({ error, taskId: req.params.id }, "Error reordering task");
     sendResponse(res, 500, "Internal server error");
   }
 };

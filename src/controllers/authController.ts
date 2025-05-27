@@ -1,44 +1,31 @@
 import { Request, Response } from "express";
 import { sendResponse } from "../utils/responseHelper";
 import { AuthService } from "../services/authService";
-import { LoginRequestDto, RegisterRequestDto } from "../dto/userDto";
+import {
+  LoginRequestDto,
+  RegisterRequestDto,
+  loginRequestSchema,
+  registerRequestSchema,
+} from "../dto/userDto";
 import logger from "../utils/logger";
 
 const authService = new AuthService();
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password, fullname } = req.body;
-
-    // Validate input
-    if (!email || !password) {
-      sendResponse(res, 400, "Email and password are required");
-      return;
-    }
-
-    // Check email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      sendResponse(res, 400, "Invalid email format");
-      return;
-    }
-
-    // Check password length
-    if (password.length < 6) {
-      sendResponse(res, 400, "Password must be at least 6 characters");
-      return;
-    }
-
-    const registerData: RegisterRequestDto = { email, password, fullname };
+    const registerData: RegisterRequestDto = req.body;
     const success = await authService.register(registerData);
 
     if (!success) {
-      logger.info({ email }, "Registration failed - Email already in use");
+      logger.info(
+        { email: registerData.email },
+        "Registration failed - Email already in use"
+      );
       sendResponse(res, 409, "Email already in use");
       return;
     }
 
-    logger.info({ email }, "User registered successfully");
+    logger.info({ email: registerData.email }, "User registered successfully");
     sendResponse(res, 201, "User registered successfully");
   } catch (error) {
     logger.error({ error }, "Error during registration");
@@ -48,25 +35,20 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Validate input
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      sendResponse(res, 400, "Email and password are required");
-      return;
-    }
-
-    const loginData: LoginRequestDto = { email, password };
+    const loginData: LoginRequestDto = req.body;
     const result = await authService.login(loginData);
 
     // If login failed
     if (!result) {
-      logger.info({ email }, "Login failed - Invalid credentials");
+      logger.info(
+        { email: loginData.email },
+        "Login failed - Invalid credentials"
+      );
       sendResponse(res, 401, "Invalid credentials");
       return;
     }
 
-    logger.info({ email }, "Login successful");
+    logger.info({ email: loginData.email }, "Login successful");
     sendResponse(res, 200, "Login successful", {
       token: result.token,
       refreshToken: result.refreshToken,

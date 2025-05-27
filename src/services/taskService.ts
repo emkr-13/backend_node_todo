@@ -102,4 +102,54 @@ export class TaskService {
       throw error;
     }
   }
+
+  async reorderTasks(
+    userId: string,
+    taskId: number,
+    newPosition: number
+  ): Promise<TaskDto[] | null> {
+    try {
+      // Check if task exists
+      const task = await this.taskRepository.findById(taskId, userId);
+      if (!task) {
+        return null;
+      }
+
+      // Get all tasks
+      const allTasks = await this.taskRepository.findAll(userId);
+
+      // Update positions for all affected tasks
+      for (const t of allTasks) {
+        if (t.id === taskId) {
+          // The task to be moved
+          await this.taskRepository.update(t.id, userId, {
+            position: newPosition,
+          });
+        } else if (task.position < newPosition) {
+          // Tasks that need to move up (decrease position)
+          if (t.position > task.position && t.position <= newPosition) {
+            await this.taskRepository.update(t.id, userId, {
+              position: t.position - 1,
+            });
+          }
+        } else if (task.position > newPosition) {
+          // Tasks that need to move down (increase position)
+          if (t.position >= newPosition && t.position < task.position) {
+            await this.taskRepository.update(t.id, userId, {
+              position: t.position + 1,
+            });
+          }
+        }
+      }
+
+      // Return updated tasks
+      return await this.taskRepository.findAll(userId);
+    } catch (error) {
+      logger.error(
+        { error, userId, taskId },
+        "Error in TaskService.reorderTasks"
+      );
+      throw error;
+    }
+  }
 }

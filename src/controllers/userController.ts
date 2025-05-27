@@ -1,7 +1,7 @@
 import { sendResponse } from "../utils/responseHelper";
 import { Request, Response } from "express";
 import { UserService } from "../services/userService";
-import { UserUpdateDto } from "../dto/userDto";
+import { UserUpdateDto, userUpdateSchema } from "../dto/userDto";
 import logger from "../utils/logger";
 
 const userService = new UserService();
@@ -48,15 +48,7 @@ export const editUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const { fullname } = req.body;
-
-    // Validate input
-    if (!fullname) {
-      sendResponse(res, 400, "Username is required");
-      return;
-    }
-
-    const userData: UserUpdateDto = { fullname };
+    const userData: UserUpdateDto = req.body;
     const success = await userService.updateUser(userId, userData);
 
     // If user not found
