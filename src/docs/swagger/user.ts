@@ -26,25 +26,26 @@
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Profile retrieved successfully
+ *                   example: User profile retrieved successfully
  *                 data:
  *                   type: object
  *                   properties:
- *                     id:
- *                       type: number
- *                       example: 1
- *                     username:
- *                       type: string
- *                       example: johndoe
  *                     email:
  *                       type: string
  *                       example: john@example.com
- *                     createdAt:
+ *                     fullname:
+ *                       type: string
+ *                       example: John Doe
+ *                     usercreated:
  *                       type: string
  *                       format: date-time
  *                       example: "2023-01-01T00:00:00.000Z"
- *       401:
- *         description: Unauthorized, invalid or missing token
+ *       400:
+ *         description: Unauthorized
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
  */
 
 /**
@@ -61,21 +62,15 @@
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - fullname
  *             properties:
- *               username:
+ *               fullname:
  *                 type: string
- *                 example: johndoeUpdated
- *               email:
- *                 type: string
- *                 format: email
- *                 example: john.updated@example.com
- *               password:
- *                 type: string
- *                 format: password
- *                 example: NewStrongPassword123
+ *                 example: John Doe Updated
  *     responses:
  *       200:
- *         description: User profile updated successfully
+ *         description: User updated successfully
  *         content:
  *           application/json:
  *             schema:
@@ -86,23 +81,11 @@
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Profile updated successfully
- *                 data:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: number
- *                       example: 1
- *                     username:
- *                       type: string
- *                       example: johndoeUpdated
- *                     email:
- *                       type: string
- *                       example: john.updated@example.com
+ *                   example: User updated successfully
  *       400:
- *         description: Invalid input data
- *       401:
- *         description: Unauthorized, invalid or missing token
- *       409:
- *         description: Email already in use
+ *         description: Unauthorized
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
  */

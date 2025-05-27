@@ -18,13 +18,9 @@
  *           schema:
  *             type: object
  *             required:
- *               - username
  *               - email
  *               - password
  *             properties:
- *               username:
- *                 type: string
- *                 example: johndoe
  *               email:
  *                 type: string
  *                 format: email
@@ -33,6 +29,9 @@
  *                 type: string
  *                 format: password
  *                 example: StrongPassword123
+ *               fullname:
+ *                 type: string
+ *                 example: John Doe
  *     responses:
  *       201:
  *         description: User registered successfully
@@ -47,22 +46,10 @@
  *                 message:
  *                   type: string
  *                   example: User registered successfully
- *                 data:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: number
- *                       example: 1
- *                     username:
- *                       type: string
- *                       example: johndoe
- *                     email:
- *                       type: string
- *                       example: john@example.com
- *       400:
- *         description: Invalid input data
  *       409:
- *         description: User already exists
+ *         description: Email already in use
+ *       500:
+ *         description: Registration failed
  */
 
 /**
@@ -109,22 +96,13 @@
  *                     token:
  *                       type: string
  *                       example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
- *                     user:
- *                       type: object
- *                       properties:
- *                         id:
- *                           type: number
- *                           example: 1
- *                         username:
- *                           type: string
- *                           example: johndoe
- *                         email:
- *                           type: string
- *                           example: john@example.com
- *       400:
+ *                     refreshToken:
+ *                       type: string
+ *                       example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *       401:
  *         description: Invalid credentials
- *       404:
- *         description: User not found
+ *       500:
+ *         description: An unexpected error occurred
  */
 
 /**
@@ -148,7 +126,9 @@
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: Logged out successfully
- *       401:
- *         description: Unauthorized, invalid or missing token
+ *                   example: Logout successful
+ *       400:
+ *         description: Unauthorized
+ *       500:
+ *         description: Logout failed
  */

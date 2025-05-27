@@ -12,34 +12,28 @@
  *     Task:
  *       type: object
  *       required:
- *         - title
  *         - description
  *       properties:
  *         id:
  *           type: number
  *           description: The auto-generated id of the task
  *           example: 1
- *         title:
- *           type: string
- *           description: The title of the task
- *           example: Complete project documentation
  *         description:
  *           type: string
  *           description: The description of the task
  *           example: Write comprehensive documentation for the project
- *         status:
- *           type: string
- *           description: The status of the task
- *           enum: [TODO, IN_PROGRESS, DONE]
- *           example: TODO
+ *         is_completed:
+ *           type: boolean
+ *           description: The completion status of the task
+ *           example: false
  *         position:
  *           type: number
  *           description: The position of the task in the list
  *           example: 1
- *         userId:
- *           type: number
+ *         user_id:
+ *           type: string
  *           description: The id of the user who owns the task
- *           example: 1
+ *           example: "abc123"
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -78,8 +72,10 @@
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Task'
- *       401:
- *         description: Unauthorized, invalid or missing token
+ *       400:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
  */
 
 /**
@@ -97,20 +93,14 @@
  *           schema:
  *             type: object
  *             required:
- *               - title
  *               - description
  *             properties:
- *               title:
- *                 type: string
- *                 example: Complete project documentation
  *               description:
  *                 type: string
  *                 example: Write comprehensive documentation for the project
- *               status:
- *                 type: string
- *                 enum: [TODO, IN_PROGRESS, DONE]
- *                 default: TODO
- *                 example: TODO
+ *               position:
+ *                 type: number
+ *                 example: 1
  *     responses:
  *       201:
  *         description: Task created successfully
@@ -128,9 +118,9 @@
  *                 data:
  *                   $ref: '#/components/schemas/Task'
  *       400:
- *         description: Invalid input data
- *       401:
- *         description: Unauthorized, invalid or missing token
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
  */
 
 /**
@@ -164,10 +154,12 @@
  *                   example: Task retrieved successfully
  *                 data:
  *                   $ref: '#/components/schemas/Task'
- *       401:
- *         description: Unauthorized, invalid or missing token
+ *       400:
+ *         description: Unauthorized
  *       404:
  *         description: Task not found
+ *       500:
+ *         description: Internal server error
  */
 
 /**
@@ -192,16 +184,15 @@
  *           schema:
  *             type: object
  *             properties:
- *               title:
- *                 type: string
- *                 example: Updated project documentation
  *               description:
  *                 type: string
- *                 example: Updated comprehensive documentation for the project
- *               status:
- *                 type: string
- *                 enum: [TODO, IN_PROGRESS, DONE]
- *                 example: IN_PROGRESS
+ *                 example: Updated documentation for the project
+ *               is_completed:
+ *                 type: boolean
+ *                 example: true
+ *               position:
+ *                 type: number
+ *                 example: 2
  *     responses:
  *       200:
  *         description: Task updated successfully
@@ -219,11 +210,11 @@
  *                 data:
  *                   $ref: '#/components/schemas/Task'
  *       400:
- *         description: Invalid input data
- *       401:
- *         description: Unauthorized, invalid or missing token
+ *         description: Unauthorized or no update data provided
  *       404:
  *         description: Task not found
+ *       500:
+ *         description: Internal server error
  */
 
 /**
@@ -255,10 +246,12 @@
  *                 message:
  *                   type: string
  *                   example: Task deleted successfully
- *       401:
- *         description: Unauthorized, invalid or missing token
+ *       400:
+ *         description: Unauthorized
  *       404:
  *         description: Task not found
+ *       500:
+ *         description: Internal server error
  */
 
 /**
@@ -308,9 +301,9 @@
  *                   items:
  *                     $ref: '#/components/schemas/Task'
  *       400:
- *         description: Invalid input data
- *       401:
- *         description: Unauthorized, invalid or missing token
+ *         description: Unauthorized, invalid task ID, or invalid newPosition
  *       404:
  *         description: Task not found
+ *       500:
+ *         description: Internal server error
  */
